@@ -113,6 +113,15 @@ class SeguridadApi(PruebaApi):
         )
         self.assertEqual(413, codigo)
 
+    def test_api_TC22_sin_sesion_valida_recibe_401_antes_de_validar_el_cuerpo(self):
+        """SEC-03: la autenticacion va primero; sin sesion no se revelan reglas de validacion."""
+        for token in (None, "lab-inexistente", "lab-vencida"):
+            for cuerpo in ("{nota:", "[85]", '{"nota": 5000}'):
+                codigo, texto, _ = self.llamar("POST", "/expedientes/101/nota", token, cuerpo)
+                self.assertEqual(401, codigo, f"token={token!r} cuerpo={cuerpo!r}")
+                self.assertNotIn("inv", texto.lower(), "el 401 no debe describir errores de validacion")
+        self.assertEqual(82, self.nota_de("101"))
+
     def test_api_TC21_respuestas_no_se_almacenan_en_cache(self):
         conexion = http.client.HTTPConnection("127.0.0.1", self.puerto, timeout=5)
         try:
