@@ -55,6 +55,11 @@ def autenticar(estado, token):
     return USUARIOS.get(sesion["usuario"]) if sesion else None
 
 
+def no_autenticado():
+    """Unica respuesta para sesion ausente, desconocida, revocada o vencida (no revela cual)."""
+    return 401, {"error": "No autenticado"}
+
+
 def _auditar(estado, accion, usuario, expediente_id, resultado):
     # Nunca se guarda el token: solo el id del usuario.
     estado["auditoria"].append(
@@ -92,7 +97,7 @@ def _nota_valida(nota):
 def leer_expediente(estado, token, expediente_id):
     usuario = autenticar(estado, token)
     if usuario is None:
-        return 401, {"error": "No autenticado"}
+        return no_autenticado()
     expediente = estado["expedientes"].get(expediente_id)
     if expediente is None:
         if usuario["rol"] == "administrador":
@@ -107,7 +112,7 @@ def leer_expediente(estado, token, expediente_id):
 def actualizar_nota(estado, token, expediente_id, nota):
     usuario = autenticar(estado, token)
     if usuario is None:
-        return 401, {"error": "No autenticado"}
+        return no_autenticado()
     expediente = estado["expedientes"].get(expediente_id)
     # Permisos primero (rol y SEC-02: sede), validacion de datos despues.
     # Un ID inexistente se trata como no autorizado (SEC-05: no enumerar expedientes).
@@ -124,6 +129,6 @@ def actualizar_nota(estado, token, expediente_id, nota):
 def revocar_sesion(estado, token):
     sesion = _sesion_vigente(estado, token)
     if sesion is None:
-        return 401, {"error": "No autenticado"}
+        return no_autenticado()
     sesion["revocada"] = True
     return 200, {"mensaje": "Sesión revocada"}

@@ -2,7 +2,7 @@
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
-from src.lab import autenticar, estado_inicial, leer_expediente, actualizar_nota, revocar_sesion
+from src.lab import autenticar, estado_inicial, leer_expediente, actualizar_nota, no_autenticado, revocar_sesion
 
 
 class ServidorLaboratorio(BaseHTTPRequestHandler):
@@ -37,7 +37,7 @@ class ServidorLaboratorio(BaseHTTPRequestHandler):
             return self._salida(codigo, resultado)
         if ruta.startswith("/expedientes/") and ruta.endswith("/nota"):
             if autenticar(self.estado, self._token()) is None:  # SEC-03: autenticar antes de leer el cuerpo
-                return self._salida(401, {"error": "No autenticado"})
+                return self._salida(*no_autenticado())
             try:
                 cantidad = int(self.headers.get("Content-Length", "0"))
                 if cantidad < 0:
