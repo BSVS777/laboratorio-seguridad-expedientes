@@ -122,6 +122,15 @@ class SeguridadApi(PruebaApi):
                 self.assertNotIn("inv", texto.lower(), "el 401 no debe describir errores de validacion")
         self.assertEqual(82, self.nota_de("101"))
 
+    def test_api_TC23_el_401_llega_completo_aunque_el_cliente_envie_cuerpo(self):
+        """SEC-03/SEC-07: el servidor debe consumir el cuerpo antes de cerrar; si no, el cierre
+        con datos pendientes aborta la conexion (RST) y el cliente pierde la respuesta 401.
+        El fallo es intermitente, por eso se repite la solicitud muchas veces."""
+        cuerpo = '{"nota": 90, "relleno": "' + "x" * 900 + '"}'
+        for intento in range(200):
+            codigo, _, _ = self.llamar("POST", "/expedientes/101/nota", None, cuerpo)
+            self.assertEqual(401, codigo, f"intento {intento}")
+
     def test_api_TC21_respuestas_no_se_almacenan_en_cache(self):
         conexion = http.client.HTTPConnection("127.0.0.1", self.puerto, timeout=5)
         try:
