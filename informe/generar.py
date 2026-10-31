@@ -76,6 +76,8 @@ def md(texto):
 
 
 def tabla(cabeceras, filas, clase=""):
+    if filas and all(re.match(r"^(\*\*)?(TC|SEC|CA|PM|H|R|A|C|NC|OBS|M)-\d+", str(f[0])) for f in filas):
+        clase = f"{clase} idcol".strip()
     cab = "".join(f"<th>{md(c)}</th>" for c in cabeceras)
     cuerpo = "".join("<tr>" + "".join(f"<td>{md(c)}</td>" for c in fila) + "</tr>" for fila in filas)
     return f'<table class="{clase}"><thead><tr>{cab}</tr></thead><tbody>{cuerpo}</tbody></table>'
@@ -203,7 +205,7 @@ def pruebas_manuales():
         identificador, _, descripcion = encabezado.partition(" - ")
         caso = re.search(r"Caso relacionado: (.+)", seccion)
         http = re.search(r"HTTP/1\.\d (\d+)", seccion)
-        cuerpo = re.search(r"\n\n(\{.*\})\n```", seccion)
+        cuerpo = re.search(r"\n(\{.*\})\n```", seccion)
         resultado = f"HTTP {http.group(1)}" if http else (cuerpo.group(1) if cuerpo else "-")
         filas.append([identificador, descripcion, caso.group(1) if caso else "-", resultado])
     return filas
@@ -254,7 +256,7 @@ table { border-collapse: collapse; width: 100%; margin: 4pt 0 8pt; font-size: 8.
 th { background: #17375e; color: #fff; text-align: left; padding: 3pt 4pt; border: 1px solid #17375e; }
 td { padding: 3pt 4pt; border: 1px solid #c9d1dc; vertical-align: top; }
 tr { break-inside: avoid; }
-td:first-child { white-space: nowrap; }
+table.idcol td:first-child { white-space: nowrap; }
 tbody tr:nth-child(even) td { background: #f6f8fb; }
 table.compacta { width: auto; min-width: 70%; }
 mark { background: #fff3a8; color: #6b4e00; padding: 0 2pt; border-radius: 2pt; }
