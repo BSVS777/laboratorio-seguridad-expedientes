@@ -1,15 +1,15 @@
 # SAST adicional: bandit (analisis estatico sin ejecutar el codigo)
 comando: python -m bandit -r src servidor.py -f txt
-commit base: 06303e3 (codigo final de src/ y servidor.py)
+commit base: dafa7ba (codigo final de src/ y servidor.py)
 bandit 1.9.4
 ------------------------------------------------------------------------
-Run started:2026-10-31 03:45:42.638760+00:00
+Run started:2026-10-31 03:52:35.282878+00:00
 
 Test results:
 	No issues identified.
 
 Code scanned:
-	Total lines of code: 163
+	Total lines of code: 177
 	Total lines skipped (#nosec): 0
 	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
 

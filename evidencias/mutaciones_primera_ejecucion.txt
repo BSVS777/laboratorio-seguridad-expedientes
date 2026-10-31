@@ -1,0 +1,19 @@
+# Primera ejecucion de la prueba de mutacion (suite sin TC-04c)
+codigo: commit dafa7ba; tests/test_laboratorio.py: version del commit 60b32c4 (antes de agregar TC-04c)
+python Python 3.12.10
+---
+M-01 DETECTADA  ['TC-10', 'TC-12']
+M-02 DETECTADA  ['TC-03', 'TC-20']
+M-03 DETECTADA  ['TC-09', 'TC-16']
+M-04 DETECTADA  ['TC-05']
+M-05 DETECTADA  ['TC-14']
+M-06 DETECTADA  ['TC-04']
+M-07 SOBREVIVE  []
+M-08 DETECTADA  ['TC-19']
+M-09 DETECTADA  ['TC-12']
+M-10 DETECTADA  ['TC-20']
+M-11 DETECTADA  ['TC-15']
+M-12 DETECTADA  ['TC-15']
+M-13 DETECTADA  ['TC-22']
+M-14 DETECTADA  ['TC-21']
+M-15 DETECTADA  ['TC-18']

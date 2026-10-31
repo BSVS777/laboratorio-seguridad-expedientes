@@ -1,0 +1,218 @@
+{
+  "pruebas_linea_base": 34,
+  "mutaciones": [
+    {
+      "id": "M-01",
+      "requisito": "SEC-01",
+      "mutacion": "El docente puede leer expedientes de cualquier sede",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-10",
+        "TC-12"
+      ],
+      "esperados": [
+        "TC-10"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-02",
+      "requisito": "SEC-02",
+      "mutacion": "El docente puede modificar notas de otra sede",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-03",
+        "TC-20"
+      ],
+      "esperados": [
+        "TC-03"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-03",
+      "requisito": "SEC-02",
+      "mutacion": "Se elimina la comprobacion de rol docente al modificar",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-09",
+        "TC-16"
+      ],
+      "esperados": [
+        "TC-09"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-04",
+      "requisito": "SEC-04",
+      "mutacion": "Se elimina la validacion de rango de la nota",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-05"
+      ],
+      "esperados": [
+        "TC-05"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-05",
+      "requisito": "SEC-04",
+      "mutacion": "Un booleano se acepta como nota",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-14"
+      ],
+      "esperados": [
+        "TC-14"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-06",
+      "requisito": "SEC-03",
+      "mutacion": "Una sesion revocada sigue autenticando",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-04"
+      ],
+      "esperados": [
+        "TC-04"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-07",
+      "requisito": "SEC-03",
+      "mutacion": "Se ignora la bandera 'expirada' (antes la tapaba el reloj)",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-04"
+      ],
+      "esperados": [
+        "TC-04"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-08",
+      "requisito": "SEC-03",
+      "mutacion": "La sesion no caduca por reloj",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-19"
+      ],
+      "esperados": [
+        "TC-19"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-09",
+      "requisito": "SEC-05",
+      "mutacion": "Un ID inexistente responde 404 a cualquier rol (enumeracion)",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-12"
+      ],
+      "esperados": [
+        "TC-12"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-10",
+      "requisito": "SEC-05",
+      "mutacion": "Escribir sobre un ID inexistente deja de ser 403",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-20"
+      ],
+      "esperados": [
+        "TC-20"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-11",
+      "requisito": "SEC-06",
+      "mutacion": "Las denegaciones dejan de auditarse",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-15"
+      ],
+      "esperados": [
+        "TC-15"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-12",
+      "requisito": "SEC-06",
+      "mutacion": "La bitacora guarda un valor con forma de token",
+      "archivo": "src/lab.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-15"
+      ],
+      "esperados": [
+        "TC-15"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-13",
+      "requisito": "SEC-03",
+      "mutacion": "El servidor procesa el cuerpo antes de autenticar",
+      "archivo": "servidor.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-22"
+      ],
+      "esperados": [
+        "TC-22"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-14",
+      "requisito": "SEC-05",
+      "mutacion": "Se elimina Cache-Control: no-store",
+      "archivo": "servidor.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-21"
+      ],
+      "esperados": [
+        "TC-21"
+      ],
+      "esperados_detectan": true
+    },
+    {
+      "id": "M-15",
+      "requisito": "SEC-07",
+      "mutacion": "Se acepta Content-Length negativo",
+      "archivo": "servidor.py",
+      "detectada": true,
+      "casos_que_fallan": [
+        "TC-18"
+      ],
+      "esperados": [
+        "TC-18"
+      ],
+      "esperados_detectan": true
+    }
+  ]
+}
