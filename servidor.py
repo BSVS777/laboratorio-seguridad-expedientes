@@ -21,6 +21,21 @@ class ServidorLaboratorio(BaseHTTPRequestHandler):
         if 0 < cantidad <= 1024:
             self.rfile.read(cantidad)
 
+    def _leer_nota(self):
+        """Interpreta el cuerpo JSON. Devuelve (None, nota) o ((codigo, cuerpo_de_error), None)."""
+        try:
+            cantidad = int(self.headers.get("Content-Length", "0"))
+            if cantidad < 0:
+                return (400, {"error": "Content-Length inválido"}), None
+            if cantidad > 1024:
+                return (413, {"error": "Solicitud demasiado grande"}), None
+            datos = json.loads(self.rfile.read(cantidad).decode("utf-8"))
+            if not isinstance(datos, dict):
+                return (400, {"error": "Objeto JSON esperado"}), None
+            return None, datos.get("nota")
+        except (ValueError, UnicodeError):
+            return (400, {"error": "JSON inválido"}), None
+
     def _salida(self, codigo, datos):
         cuerpo = json.dumps(datos, ensure_ascii=False).encode("utf-8")
         self.send_response(codigo)
@@ -48,18 +63,9 @@ class ServidorLaboratorio(BaseHTTPRequestHandler):
             if autenticar(self.estado, self._token()) is None:  # SEC-03: autenticar antes de interpretar el cuerpo
                 self._descartar_cuerpo()
                 return self._salida(*no_autenticado())
-            try:
-                cantidad = int(self.headers.get("Content-Length", "0"))
-                if cantidad < 0:
-                    return self._salida(400, {"error": "Content-Length inválido"})
-                if cantidad > 1024:
-                    return self._salida(413, {"error": "Solicitud demasiado grande"})
-                datos = json.loads(self.rfile.read(cantidad).decode("utf-8"))
-                if not isinstance(datos, dict):
-                    return self._salida(400, {"error": "Objeto JSON esperado"})
-                nota = datos.get("nota")
-            except (ValueError, UnicodeError):
-                return self._salida(400, {"error": "JSON inválido"})
+            error, nota = self._leer_nota()
+            if error:
+                return self._salida(*error)
             codigo, resultado = actualizar_nota(self.estado, self._token(), ruta.split("/")[2], nota)
             return self._salida(codigo, resultado)
         return self._salida(404, {"error": "Ruta inexistente"})
