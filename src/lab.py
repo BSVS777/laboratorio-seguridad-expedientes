@@ -39,14 +39,20 @@ def estado_inicial(ahora=time.time):
     }
 
 
-def autenticar(estado, token):
-    """SEC-03: una sesion revocada o expirada NO autentica."""
+def _sesion_vigente(estado, token):
+    """Devuelve la sesion solo si existe, no esta revocada ni expirada (bandera o reloj)."""
     sesion = estado["sesiones"].get(token)
     if sesion is None or sesion["revocada"] or sesion["expirada"]:
         return None
     if estado["ahora"]() >= sesion["expira_en"]:  # caducidad por reloj
         return None
-    return USUARIOS.get(sesion["usuario"])
+    return sesion
+
+
+def autenticar(estado, token):
+    """SEC-03: una sesion revocada o expirada NO autentica."""
+    sesion = _sesion_vigente(estado, token)
+    return USUARIOS.get(sesion["usuario"]) if sesion else None
 
 
 def _auditar(estado, accion, usuario, expediente_id, resultado):
@@ -116,8 +122,8 @@ def actualizar_nota(estado, token, expediente_id, nota):
 
 
 def revocar_sesion(estado, token):
-    sesion = estado["sesiones"].get(token)
-    if sesion is None or sesion["revocada"] or sesion["expirada"] or estado["ahora"]() >= sesion["expira_en"]:
+    sesion = _sesion_vigente(estado, token)
+    if sesion is None:
         return 401, {"error": "No autenticado"}
     sesion["revocada"] = True
     return 200, {"mensaje": "Sesión revocada"}
