@@ -74,7 +74,10 @@ def leer_expediente(estado, token, expediente_id):
         return 401, {"error": "No autenticado"}
     expediente = estado["expedientes"].get(expediente_id)
     if expediente is None:
-        return 404, {"error": "No existe"}
+        if usuario["rol"] == "administrador":
+            return 404, {"error": "No existe"}
+        _auditar(estado, "lectura", usuario, expediente_id, "denegada")
+        return 403, {"error": "Operación denegada"}  # indistinguible de un expediente ajeno
     if not _puede_leer(usuario, expediente):
         _auditar(estado, "lectura", usuario, expediente_id, "denegada")
         return 403, {"error": "Operación denegada"}  # sin datos confidenciales
@@ -88,7 +91,8 @@ def actualizar_nota(estado, token, expediente_id, nota):
         return 401, {"error": "No autenticado"}
     expediente = estado["expedientes"].get(expediente_id)
     if expediente is None:
-        return 404, {"error": "No existe"}
+        _auditar(estado, "actualizacion", usuario, expediente_id, "denegada")
+        return 403, {"error": "Operación denegada"}  # indistinguible de un expediente ajeno
     # Permisos primero (rol y SEC-02: sede), validacion de datos despues.
     if usuario["rol"] != "docente" or expediente["sede"] != usuario["sede"]:
         _auditar(estado, "actualizacion", usuario, expediente_id, "denegada")
