@@ -171,5 +171,42 @@ class SeguridadExpedientes(PruebaSeguridadBase):
         self.assertEqual(403, codigo, "un 400 revelaria reglas internas a quien no tiene permiso")
 
 
+class VigenciaDeSesion(PruebaSeguridadBase):
+    """SEC-03: la sesion caduca por reloj, no solo por una bandera manual."""
+
+    INSTANTE_EXPIRACION = 1000.0
+
+    def preparar_sesion(self, token, ahora):
+        self.estado["sesiones"][token]["expira_en"] = self.INSTANTE_EXPIRACION
+        self.estado["ahora"] = lambda: ahora
+
+    def test_TC19a_sesion_con_expiracion_pasada_no_lee_ni_modifica(self):
+        """[N] SEC-03: expira_en vencido (sin bandera 'expirada') da 401."""
+        self.preparar_sesion("lab-maria", ahora=self.INSTANTE_EXPIRACION + 500)
+        codigo, datos = leer_expediente(self.estado, "lab-maria", "101")
+        self.assertEqual(401, codigo, "una sesion vencida por reloj no debe leer")
+        self.assertSinDatosProtegidos(datos, "lectura con sesion vencida por reloj")
+        codigo, _ = actualizar_nota(self.estado, "lab-maria", "101", 50)
+        self.assertEqual(401, codigo, "una sesion vencida por reloj no debe modificar")
+        self.assertExpedientesIntactos("escritura con sesion vencida por reloj")
+
+    def test_TC19b_frontera_de_expiracion(self):
+        """[F] SEC-03: un instante antes de expirar es valida; en el instante exacto ya no."""
+        self.preparar_sesion("lab-ana", ahora=self.INSTANTE_EXPIRACION - 0.001)
+        self.assertEqual(200, leer_expediente(self.estado, "lab-ana", "101")[0])
+        self.preparar_sesion("lab-ana", ahora=self.INSTANTE_EXPIRACION)
+        self.assertEqual(401, leer_expediente(self.estado, "lab-ana", "101")[0])
+
+    def test_TC19c_sesion_vencida_por_reloj_no_se_puede_revocar_como_vigente(self):
+        """[N] SEC-03: revocar una sesion ya vencida responde 401, igual que autenticar."""
+        self.preparar_sesion("lab-ana", ahora=self.INSTANTE_EXPIRACION + 1)
+        self.assertEqual(401, revocar_sesion(self.estado, "lab-ana")[0])
+
+    def test_TC19d_sesiones_nuevas_tienen_vigencia_finita(self):
+        """[X] SEC-03: toda sesion vigente del estado inicial tiene un instante de expiracion."""
+        for token, sesion in self.estado["sesiones"].items():
+            self.assertIsNotNone(sesion.get("expira_en"), f"{token} no tiene 'expira_en'")
+
+
 if __name__ == "__main__":
     unittest.main()
