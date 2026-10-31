@@ -41,7 +41,8 @@ $casos = @(
     @("Sin token",                               "GET",  "/expedientes/101",       "",           "",              401, "nota"),
     @("Sesion expirada",                         "GET",  "/expedientes/101",       "lab-vencida","",              401, "nota"),
     @("Admin lee otra sede",                     "GET",  "/expedientes/202",       "lab-admin",  "",              200, ""),
-    @("Expediente inexistente",                  "GET",  "/expedientes/999",       "lab-ana",    "",              404, "nota"),
+    @("Inexistente (estudiante) = ajeno",        "GET",  "/expedientes/999",       "lab-ana",    "",              403, "nota"),
+    @("Inexistente (admin) 404",                 "GET",  "/expedientes/999",       "lab-admin",  "",              404, "nota"),
     @("Maria cambia nota en su sede",            "POST", "/expedientes/101/nota",  "lab-maria",  '{"nota":85}',   200, ""),
     @("Maria NO cambia nota de Pacifico",        "POST", "/expedientes/202/nota",  "lab-maria",  '{"nota":10}',   403, "nota"),
     @("Admin NO cambia notas",                   "POST", "/expedientes/101/nota",  "lab-admin",  '{"nota":50}',   403, ""),
@@ -76,5 +77,7 @@ Escribir ("Pruebas unitarias: {0}" -f $(if ($unitOk) { "OK" } else { "CON FALLOS
 Escribir ("Pruebas de API:    {0} de {1} correctas" -f ($casos.Count - $fallos), $casos.Count) ""
 
 # Evidencia reproducible en UTF-8 (sin BOM).
-[IO.File]::WriteAllLines((Join-Path $PSScriptRoot "evidencia.txt"), $log, (New-Object Text.UTF8Encoding $false))
+$destino = Join-Path $PSScriptRoot "evidencias\ejecucion_ps1.txt"
+New-Item -ItemType Directory -Force -Path (Split-Path $destino) | Out-Null
+[IO.File]::WriteAllLines($destino, $log, (New-Object Text.UTF8Encoding $false))
 if (-not $unitOk -or $fallos -gt 0) { exit 1 }
