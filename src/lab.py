@@ -1,8 +1,11 @@
-"""Laboratorio didactico (version CORREGIDA).
+"""Modelo de negocio del laboratorio de seguridad de expedientes academicos.
 
 No reutilizar en produccion: los tokens son sinteticos y no hay autenticacion real.
-Correcciones: SEC-01 autorizacion en lectura, SEC-02 sede del docente,
-SEC-03 sesiones revocadas/expiradas, SEC-04 validacion de nota, y auditoria sin tokens.
+
+Requisitos de seguridad implementados (ver matriz_trazabilidad.csv):
+SEC-01 autorizacion de lectura por rol/sede/propiedad, SEC-02 cambio de nota solo del docente de la sede,
+SEC-03 sesiones ausentes/revocadas/vencidas (bandera o reloj), SEC-04 nota numerica en [0,100],
+SEC-05 errores sin datos ni enumeracion de IDs, SEC-06 auditoria sin tokens.
 """
 import math
 import time
