@@ -1,0 +1,68 @@
+# TDD ciclo 3 (adicional) - VERDE: autenticar antes de procesar el cuerpo
+fecha: 2026-10-30T21:44:36-06:00
+comando: python -m unittest discover -s tests -v
+python: 3.12.10 (Windows 11)
+commit base: ec13a34 (test: add failing api test for 401 before body validation (tdd cycle 3 red))
+arbol de codigo: con cambios sin confirmar
+codigo de salida: 0
+------------------------------------------------------------------------
+test_api_TC01_estudiante_lee_su_expediente (test_api.SeguridadApi.test_api_TC01_estudiante_lee_su_expediente) ... ok
+test_api_TC02_estudiante_no_lee_expediente_ajeno_y_no_filtra (test_api.SeguridadApi.test_api_TC02_estudiante_no_lee_expediente_ajeno_y_no_filtra) ... ok
+test_api_TC03_docente_no_modifica_otra_sede (test_api.SeguridadApi.test_api_TC03_docente_no_modifica_otra_sede) ... ok
+test_api_TC04_sesiones_revocada_y_vencida_reciben_401 (test_api.SeguridadApi.test_api_TC04_sesiones_revocada_y_vencida_reciben_401) ... ok
+test_api_TC05_nota_fuera_de_rango_da_400_y_no_persiste (test_api.SeguridadApi.test_api_TC05_nota_fuera_de_rango_da_400_y_no_persiste) ... ok
+test_api_TC06_docente_actualiza_nota_de_su_sede (test_api.SeguridadApi.test_api_TC06_docente_actualiza_nota_de_su_sede) ... ok
+test_api_TC17_json_invalido_o_no_objeto_da_400 (test_api.SeguridadApi.test_api_TC17_json_invalido_o_no_objeto_da_400) ... ok
+test_api_TC18_content_length_negativo_da_400_y_exceso_da_413 (test_api.SeguridadApi.test_api_TC18_content_length_negativo_da_400_y_exceso_da_413) ... ok
+test_api_TC21_respuestas_no_se_almacenan_en_cache (test_api.SeguridadApi.test_api_TC21_respuestas_no_se_almacenan_en_cache) ... ok
+test_api_TC22_sin_sesion_valida_recibe_401_antes_de_validar_el_cuerpo (test_api.SeguridadApi.test_api_TC22_sin_sesion_valida_recibe_401_antes_de_validar_el_cuerpo)
+SEC-03: la autenticacion va primero; sin sesion no se revelan reglas de validacion. ... ok
+test_TC01_estudiante_lee_su_expediente (test_laboratorio.SeguridadExpedientes.test_TC01_estudiante_lee_su_expediente)
+[P] SEC-01: el estudiante A lee su propio expediente. ... ok
+test_TC02_estudiante_no_lee_expediente_ajeno (test_laboratorio.SeguridadExpedientes.test_TC02_estudiante_no_lee_expediente_ajeno)
+[N] SEC-01/SEC-05: el estudiante A pide el expediente de B: 403 sin datos. ... ok
+test_TC03_docente_no_modifica_nota_de_otra_sede (test_laboratorio.SeguridadExpedientes.test_TC03_docente_no_modifica_nota_de_otra_sede)
+[N] SEC-02: Maria (Central) intenta cambiar el expediente de Pacifico. ... ok
+test_TC04a_sesion_revocada_no_accede (test_laboratorio.SeguridadExpedientes.test_TC04a_sesion_revocada_no_accede)
+[N] SEC-03: tras revocar la sesion, ni lectura ni escritura. ... ok
+test_TC04b_sesion_vencida_no_lee_ni_modifica (test_laboratorio.SeguridadExpedientes.test_TC04b_sesion_vencida_no_lee_ni_modifica)
+[N] SEC-03: la sesion marcada como vencida no lee ni modifica. ... ok
+test_TC05_nota_fuera_de_rango_se_rechaza_y_no_persiste (test_laboratorio.SeguridadExpedientes.test_TC05_nota_fuera_de_rango_se_rechaza_y_no_persiste)
+[F] SEC-04: valores justo fuera de [0,100] dan 400 y no se guardan. ... ok
+test_TC06_docente_actualiza_nota_de_su_sede (test_laboratorio.SeguridadExpedientes.test_TC06_docente_actualiza_nota_de_su_sede)
+[P] SEC-02: el docente cambia la nota de un expediente de su sede. ... ok
+test_TC07_admin_lee_expedientes_de_ambas_sedes (test_laboratorio.SeguridadExpedientes.test_TC07_admin_lee_expedientes_de_ambas_sedes)
+[P] SEC-01: el administrador lee expedientes de Central y Pacifico. ... ok
+test_TC08_admin_no_modifica_notas (test_laboratorio.SeguridadExpedientes.test_TC08_admin_no_modifica_notas)
+[N] SEC-02: escalada vertical, el administrador no puede cambiar notas. ... ok
+test_TC09_estudiante_no_modifica_su_propia_nota (test_laboratorio.SeguridadExpedientes.test_TC09_estudiante_no_modifica_su_propia_nota)
+[N] SEC-02: escalada vertical, el estudiante no puede cambiar notas. ... ok
+test_TC10_docente_no_lee_expediente_de_otra_sede (test_laboratorio.SeguridadExpedientes.test_TC10_docente_no_lee_expediente_de_otra_sede)
+[N] SEC-01: Maria (Central) intenta leer el expediente de Pacifico. ... ok
+test_TC11_limites_0_y_100_son_validos (test_laboratorio.SeguridadExpedientes.test_TC11_limites_0_y_100_son_validos)
+[F] SEC-04: los limites inclusivos 0 y 100 se aceptan y persisten. ... ok
+test_TC12_expediente_inexistente_no_permite_enumerar_ids (test_laboratorio.SeguridadExpedientes.test_TC12_expediente_inexistente_no_permite_enumerar_ids)
+[F] SEC-05: para quien no es administrador, un ID inexistente es ... ok
+test_TC13_token_ausente_o_desconocido_da_401 (test_laboratorio.SeguridadExpedientes.test_TC13_token_ausente_o_desconocido_da_401)
+[N] SEC-03: sin sesion o con token desconocido no se accede a nada. ... ok
+test_TC14_tipos_invalidos_de_nota_se_rechazan (test_laboratorio.SeguridadExpedientes.test_TC14_tipos_invalidos_de_nota_se_rechazan)
+[N] SEC-04: texto, null, booleano, NaN, infinito y lista no son notas. ... ok
+test_TC15_auditoria_registra_denegados_y_nunca_tokens (test_laboratorio.SeguridadExpedientes.test_TC15_auditoria_registra_denegados_y_nunca_tokens)
+[X] SEC-06: la bitacora guarda usuario/accion/resultado, jamas el token. ... ok
+test_TC16_permiso_se_evalua_antes_que_validacion_del_dato (test_laboratorio.SeguridadExpedientes.test_TC16_permiso_se_evalua_antes_que_validacion_del_dato)
+[N] SEC-05: un estudiante con dato invalido recibe 403, no 400. ... ok
+test_TC20_escritura_sobre_id_inexistente_no_permite_enumerar (test_laboratorio.SeguridadExpedientes.test_TC20_escritura_sobre_id_inexistente_no_permite_enumerar)
+[N] SEC-05: quien no puede modificar recibe 403 tambien si el ID no existe. ... ok
+test_TC19a_sesion_con_expiracion_pasada_no_lee_ni_modifica (test_laboratorio.VigenciaDeSesion.test_TC19a_sesion_con_expiracion_pasada_no_lee_ni_modifica)
+[N] SEC-03: expira_en vencido (sin bandera 'expirada') da 401. ... ok
+test_TC19b_frontera_de_expiracion (test_laboratorio.VigenciaDeSesion.test_TC19b_frontera_de_expiracion)
+[F] SEC-03: un instante antes de expirar es valida; en el instante exacto ya no. ... ok
+test_TC19c_sesion_vencida_por_reloj_no_se_puede_revocar_como_vigente (test_laboratorio.VigenciaDeSesion.test_TC19c_sesion_vencida_por_reloj_no_se_puede_revocar_como_vigente)
+[N] SEC-03: revocar una sesion ya vencida responde 401, igual que autenticar. ... ok
+test_TC19d_sesiones_nuevas_tienen_vigencia_finita (test_laboratorio.VigenciaDeSesion.test_TC19d_sesiones_nuevas_tienen_vigencia_finita)
+[X] SEC-03: toda sesion vigente del estado inicial tiene un instante de expiracion. ... ok
+
+----------------------------------------------------------------------
+Ran 32 tests in 5.126s
+
+OK
