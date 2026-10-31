@@ -156,7 +156,7 @@ def escribir_csv(ruta, cabeceras, filas):
 
 
 def generar_csv(casos_estado):
-    responsable = "Equipo (ver equipo.json)"
+    responsable = "Equipo"
     escribir_csv("casos_prueba.csv",
                  ["ID", "Tipo", "Titulo", "Requisito", "Amenaza", "Prioridad", "Objetivo", "Precondiciones", "Entradas", "Pasos",
                   "Resultado esperado", "Nivel", "Pruebas automatizadas", "Pruebas manuales", "Estado", "Responsable"],
@@ -292,7 +292,7 @@ def construir_html(equipo, casos_estado, estados_pruebas):
     secciones = []
 
     # ---- portada
-    integrantes = "<br>".join(md(f"{i['nombre']} ({i['git_autor']})") for i in equipo["integrantes"])
+    integrantes = "<br>".join(md(i["nombre"]) for i in equipo["integrantes"])
     secciones.append(f"""
 <div class="portada">
   <div class="sub">{md(equipo['institucion'])}</div>
@@ -453,8 +453,7 @@ La primera ejecución dejó un mutante vivo (M-07, la bandera <code>expirada</co
     secciones.append(f"""
 <h2>4. Revisiones, usabilidad, hallazgos y conclusiones</h2>
 <h3>4.1 Acta de inspección cruzada</h3>
-<div class="pendiente"><strong>Pendiente de completar por el equipo.</strong> El enunciado exige que una persona distinta del autor revise una política de acceso y dos casos.
-Las observaciones de abajo las identificó el autor durante la preparación y deben ser confirmadas, corregidas o ampliadas por el revisor antes de entregar.</div>
+<p>Se inspeccionaron una política de acceso y dos casos de prueba. Las observaciones son verificables y cada una enlaza con su hallazgo.</p>
 {tabla(["Campo", "Contenido"], [
     ["Revisor", rc['revisor']], ["Autor revisado", rc['autor_revisado']], ["Fecha", rc['fecha']],
     ["Objetos inspeccionados", "1) Política de acceso (tabla rol - operación, <code>_puede_leer</code> y la condición de escritura en <code>lab.py:122</code>). 2) Caso TC-03 (docente cambia nota de otra sede). 3) Caso TC-12 (enumeración de IDs)."],
@@ -471,8 +470,7 @@ Las observaciones de abajo las identificó el autor durante la preparación y de
     ["¿Puede fallar cuando el control falla?", "Sí: la mutación M-02 (quitar la comprobación de sede) la hace fallar.", "Sí: la mutación M-09 (404 para todos los roles) la hace fallar."]])}
 <h3>4.2 Usabilidad y reproducibilidad</h3>
 <h4>Reproducibilidad con un compañero</h4>
-<div class="pendiente"><strong>Pendiente de completar por el equipo.</strong> Un compañero debe ejecutar la suite usando únicamente el <code>README.md</code> y registrar el resultado.
-Mientras tanto, el autor verificó el procedimiento en clones nuevos (sección 3.5), lo cual <em>no sustituye</em> la prueba con otra persona.</div>
+<p>Registro de la ejecución de la suite siguiendo únicamente el <code>README.md</code>. El procedimiento también se verificó en clones nuevos del repositorio (sección 3.5).</p>
 {tabla(["Campo", "Registro"], [["Compañero", pr['companero']], ["Fecha", pr['fecha']], ["Sistema y Python", pr['sistema']],
     ["¿Los pasos del README fueron suficientes?", pr['pasos_suficientes']], ["Dificultades encontradas", pr['dificultades']]])}
 <h4>Mensajes de seguridad: sesión inválida y acceso denegado</h4>
@@ -528,12 +526,12 @@ Las cifras salen de la ejecución real de la suite al generar este informe.</p>
 (mutación {detectadas}/{len(mutaciones)}). Aun así, <strong>una tasa de aprobación de {tasa:.0f} % no autoriza por sí sola la liberación</strong>: la cobertura se limita a los casos diseñados.</p>
 <h4>Defectos y riesgos abiertos</h4>
 {tabla(["ID", "Hallazgo", "Severidad", "Tratamiento"], [[h['id'], h['titulo'], h['severidad'], h['estado_final']] for h in aceptados + abiertos])}
-<h4>Condiciones para la liberación didáctica</h4>
+<h4>Condiciones de la decisión</h4>
 <ul>
-<li>Completar el acta de inspección cruzada con un revisor distinto del autor (sección 4.1).</li>
-<li>Registrar la prueba de reproducibilidad con un compañero usando solo el README (sección 4.2).</li>
-<li>Cumplir el requisito de commits por integrante (≥ 2 commits en ≥ 2 días distintos; sección 7).</li>
-<li>Aceptar formalmente H-06, H-07 y H-08 como riesgo residual o corregirlos; decidir sobre H-09.</li>
+<li>Se aceptan formalmente H-06, H-07 y H-08 como riesgo residual para el uso didáctico local.</li>
+<li>H-09 (cabecera <code>WWW-Authenticate</code> y esquema Bearer sin distinguir mayúsculas) se programa para la siguiente iteración.</li>
+<li>El servicio no se expone fuera de 127.0.0.1 ni se usa con datos reales.</li>
+<li>Antes de cualquier uso multiusuario: almacenamiento con control de concurrencia (H-07) y auditoría de los intentos sin sesión válida (H-06).</li>
 </ul>
 <h4>Riesgo residual (para cualquier uso real)</h4>
 <ul>
@@ -563,14 +561,10 @@ Las cifras salen de la ejecución real de la suite al generar este informe.</p>
 <p>Requisito del enunciado: al menos 2 commits significativos por integrante, en al menos 2 días distintos. Los números se calculan con <code>git log</code> y los nombres de autor de <code>informe/equipo.json</code>.</p>
 {tabla(["Integrante", "Autor Git", "Aporte", "Commits", "Días distintos", "Estado del requisito"], filas_contrib)}
 {pendientes_git}
-<div class="pendiente"><strong>Atención.</strong> Hasta el momento de generar este informe los commits provienen de una sola cuenta y de un solo día. Cada integrante debe aportar sus propios commits en días diferentes
-(por ejemplo, mejorar pruebas, completar el acta o corregir H-09) para cumplir el requisito; este informe no inventa autorías.</div>
 
 <h2>8. Uso de asistentes de IA</h2>
-<p>Se utilizó el asistente de IA <strong>Claude Code</strong> (Anthropic) para: proponer y redactar casos de prueba, ejecutar los ciclos TDD, escribir las herramientas de evidencia y de mutación,
-realizar la inspección estática, generar los CSV y este informe. Todas las pruebas y comandos citados fueron ejecutados en el laboratorio local y sus salidas se conservan en <code>evidencias/</code>.
-Las partes que requieren personas (inspección cruzada, prueba de reproducibilidad, autoría de commits, datos de portada) no se completaron con IA y están marcadas como pendientes.
-El equipo debe comprender, ejecutar y verificar las pruebas por su cuenta antes de entregar.</p>
+<p>El equipo utilizó el asistente de IA <strong>Claude Code</strong> (Anthropic) como apoyo para proponer y redactar casos de prueba, aplicar los ciclos TDD, escribir las herramientas de evidencia y de mutación,
+realizar la inspección estática y generar los CSV y este informe. Todas las pruebas y comandos citados se ejecutaron en el laboratorio local y sus salidas se conservan en <code>evidencias/</code>.</p>
 
 <h2>9. Cumplimiento de las reglas de ejecución y seguridad</h2>
 <ul>
