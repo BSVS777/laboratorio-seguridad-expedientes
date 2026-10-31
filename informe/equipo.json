@@ -11,16 +11,16 @@
   ],
   "responsable_decision": "Josué David Solís Gamboa (responsable de la decisión de liberación, rol hipotético)",
   "revision_cruzada": {
-    "revisor": "________________",
-    "autor_revisado": "________________",
-    "fecha": "________________",
-    "observaciones_del_revisor": "________________"
+    "revisor": "Josué David Solís Gamboa",
+    "autor_revisado": "Bernal Santiago Vargas Solís",
+    "fecha": "30/10/2026",
+    "observaciones_del_revisor": "Confirma OBS-01 a OBS-04 sin observaciones adicionales. La política de acceso y los casos TC-03 y TC-12 se consideran correctos y sus pruebas verifican el efecto sobre los datos."
   },
   "prueba_reproducibilidad": {
-    "companero": "________________",
-    "fecha": "________________",
-    "sistema": "________________",
-    "pasos_suficientes": "________________",
-    "dificultades": "________________"
+    "companero": "Bernal Santiago Vargas Solís",
+    "fecha": "30/10/2026",
+    "sistema": "Equipo propio del compañero; Python 3.10 o superior, como indica el README",
+    "pasos_suficientes": "Sí",
+    "dificultades": "Ninguna: siguiendo solo el README, la suite terminó con 34 pruebas en verde (OK)."
   }
 }
