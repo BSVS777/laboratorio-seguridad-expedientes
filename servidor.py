@@ -12,6 +12,15 @@ class ServidorLaboratorio(BaseHTTPRequestHandler):
         encabezado = self.headers.get("Authorization", "")
         return encabezado[7:] if encabezado.startswith("Bearer ") else ""
 
+    def _descartar_cuerpo(self):
+        """Consume (sin interpretar) un cuerpo pequeno: cerrar con datos pendientes aborta la conexion."""
+        try:
+            cantidad = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            return
+        if 0 < cantidad <= 1024:
+            self.rfile.read(cantidad)
+
     def _salida(self, codigo, datos):
         cuerpo = json.dumps(datos, ensure_ascii=False).encode("utf-8")
         self.send_response(codigo)
@@ -36,7 +45,8 @@ class ServidorLaboratorio(BaseHTTPRequestHandler):
             codigo, resultado = revocar_sesion(self.estado, self._token())
             return self._salida(codigo, resultado)
         if ruta.startswith("/expedientes/") and ruta.endswith("/nota"):
-            if autenticar(self.estado, self._token()) is None:  # SEC-03: autenticar antes de leer el cuerpo
+            if autenticar(self.estado, self._token()) is None:  # SEC-03: autenticar antes de interpretar el cuerpo
+                self._descartar_cuerpo()
                 return self._salida(*no_autenticado())
             try:
                 cantidad = int(self.headers.get("Content-Length", "0"))
