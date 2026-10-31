@@ -86,6 +86,18 @@ class SeguridadExpedientes(PruebaSeguridadBase):
         self.assertEqual(401, codigo)
         self.assertExpedientesIntactos("escritura con sesion vencida")
 
+    def test_TC04c_bandera_expirada_prevalece_aunque_el_reloj_no_haya_vencido(self):
+        """[N] SEC-03: una sesion marcada como expirada se rechaza aunque expira_en sea futuro.
+
+        Hallazgo de la prueba de mutacion (M-07): sin este caso, la bandera 'expirada' quedaba
+        tapada por la comprobacion de reloj y ninguna prueba detectaria que se eliminara.
+        """
+        self.estado["sesiones"]["lab-ana"]["expirada"] = True
+        self.assertGreater(self.estado["sesiones"]["lab-ana"]["expira_en"], self.estado["ahora"]())
+        codigo, datos = leer_expediente(self.estado, "lab-ana", "101")
+        self.assertEqual(401, codigo)
+        self.assertSinDatosProtegidos(datos, "sesion marcada como expirada")
+
     def test_TC08_admin_no_modifica_notas(self):
         """[N] SEC-02: escalada vertical, el administrador no puede cambiar notas."""
         codigo, _ = actualizar_nota(self.estado, "lab-admin", "101", 100)
