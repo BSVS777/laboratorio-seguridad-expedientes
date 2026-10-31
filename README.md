@@ -1,34 +1,59 @@
 # Laboratorio local: seguridad de expedientes académicos
 
-**Material didáctico, NO apto para producción.** Solo ejecutar en una máquina propia, en `127.0.0.1`, con datos y credenciales completamente ficticias. No publicar en Internet ni conectar a datos reales.
+**Material didáctico, NO apto para producción.** Solo ejecutar en una máquina propia, en `127.0.0.1`, con datos y credenciales completamente ficticias.
+No publicar en Internet ni conectar a datos reales. Los tokens (`lab-ana`, etc.) no son credenciales reales y esta estrategia de autenticación no debe copiarse a un sistema real.
 
-## Requisitos
+## 1. Requisitos del entorno
 
-- Python 3.10 o superior.
-- Biblioteca estándar de Python: **no hay que instalar paquetes**.
-- Opcional: un editor y Postman o PowerShell para peticiones HTTP.
+| Requisito | Detalle |
+| --- | --- |
+| Python | 3.10 o superior (verificado con 3.12.10) |
+| Paquetes | Ninguno: solo la biblioteca estándar de Python. **No hay que instalar nada** |
+| Git | Para clonar el repositorio |
+| Windows PowerShell + `curl.exe` | Opcional: pruebas manuales y `ejecutar_todo.ps1` |
+| Microsoft Edge | Opcional: solo para regenerar `informe_seguridad.pdf` |
 
-## Primeros pasos (desde la carpeta del proyecto)
+> **Windows:** si al escribir `python` se abre Microsoft Store, desactive el alias en *Configuración > Aplicaciones > Configuración avanzada de aplicaciones >
+> Alias de ejecución de aplicaciones* (Python), o use `py` en lugar de `python` en todos los comandos.
 
-1. Ejecutar pruebas: `python -m unittest discover -s tests -v` (las 16 deben pasar en verde).
-2. Ejecutar servidor local, en otra terminal: `python servidor.py`
-3. Probar endpoint de salud: `curl.exe http://127.0.0.1:8765/health`
-4. Detener con CTRL+C.
+## 2. Instalación
 
-Para ejecutar todo de una vez (pruebas unitarias, servidor, 20 pruebas de API y resumen, regenerando `evidencia.txt`):
-`powershell -ExecutionPolicy Bypass -File .\ejecutar_todo.ps1`
+```
+git clone https://github.com/BSVS777/laboratorio-seguridad-expedientes.git
+cd laboratorio-seguridad-expedientes
+python --version
+```
 
-## Ejemplos de peticiones en Windows PowerShell
+No hay paso de instalación de dependencias. Todos los comandos siguientes se ejecutan **desde la carpeta raíz del proyecto**.
+
+## 3. Comandos exactos
+
+| Acción | Comando |
+| --- | --- |
+| Ejecutar toda la suite (34 pruebas, unidad e integración, unos 6 s) | `python -m unittest discover -s tests -v` |
+| Solo pruebas de unidad | `python -m unittest tests.test_laboratorio -v` |
+| Solo pruebas de integración con la API | `python -m unittest tests.test_api -v` |
+| Iniciar el servidor local (otra terminal) | `python servidor.py` |
+| Comprobar que responde | `curl.exe http://127.0.0.1:8765/health` |
+| Detener el servidor | `CTRL+C` |
+| Todo en uno (suite + servidor + 21 pruebas de API + resumen) | `powershell -ExecutionPolicy Bypass -File .\ejecutar_todo.ps1` |
+
+Resultado esperado de la suite: `Ran 34 tests ... OK`. Todas las pruebas deben pasar; si alguna falla, es un defecto real o un problema del entorno, no un estado inicial "rojo".
+
+## 4. Restablecer los datos sintéticos
+
+- **Servidor:** detenga con `CTRL+C` y vuelva a ejecutar `python servidor.py`. Los expedientes, las sesiones (incluidas las revocadas) y la bitácora viven en memoria y se recrean al iniciar.
+- **Pruebas `unittest`:** cada prueba crea un estado nuevo con `estado_inicial()`; las pruebas de API levantan su propio servidor en un puerto libre de 127.0.0.1. No hay que limpiar nada.
+- Datos iniciales: expediente `101` (Ana, Central, nota 82) y `202` (Luis, Pacífico, nota 91).
+
+## 5. Ejemplos de peticiones (Windows PowerShell)
 
 - Consulta legítima: `curl.exe -H "Authorization: Bearer lab-ana" http://127.0.0.1:8765/expedientes/101`
-- Consulta entre sedes (denegada con 403 y sin datos): `curl.exe -H "Authorization: Bearer lab-ana" http://127.0.0.1:8765/expedientes/202`
+- Consulta entre sedes (403 sin datos): `curl.exe -H "Authorization: Bearer lab-ana" http://127.0.0.1:8765/expedientes/202`
 - Cambio legítimo: `Invoke-RestMethod -Uri "http://127.0.0.1:8765/expedientes/101/nota" -Method Post -Headers @{ Authorization = "Bearer lab-maria" } -ContentType "application/json" -Body '{"nota":85}'`
 - Revocar sesión: `curl.exe -X POST -H "Authorization: Bearer lab-ana" http://127.0.0.1:8765/sesiones/revocar`
 
-Para reiniciar todos los datos y sesiones HTTP, detener y volver a ejecutar `servidor.py`.
-Las pruebas `unittest` reinician el estado automáticamente antes de cada caso.
-
-## Actores y reglas esperadas
+## 6. Actores y reglas esperadas
 
 | Actor | Token sintético | Sede | Permisos esperados |
 | --- | --- | --- | --- |
@@ -37,29 +62,52 @@ Las pruebas `unittest` reinician el estado automáticamente antes de cada caso.
 | María, docente | `lab-maria` | Central | Leer y modificar solo notas de su sede |
 | Pedro, docente | `lab-pedro` | Pacífico | Leer y modificar solo notas de su sede |
 | Admin | `lab-admin` | Global | Leer expedientes; no cambiar notas |
-| Cuenta con sesión expirada | `lab-vencida` | Central | No debe consultar ni modificar |
+| Cuenta con sesión vencida | `lab-vencida` | Central | No debe consultar ni modificar |
 
-Los códigos esperados para acceso denegado son `403`, para sesión ausente/revocada/expirada `401`, para datos inválidos `400`, y para operación permitida `200`. Para errores de permiso no incluir notas ni otros datos confidenciales; las decisiones no deben depender exclusivamente del código HTTP. Cualquier cambio rechazado debe conservar intacta la nota original.
+Códigos: `403` acceso denegado, `401` sesión ausente/desconocida/revocada/vencida, `400` datos inválidos, `413` cuerpo mayor a 1024 bytes, `200` operación permitida.
+Las respuestas de error no incluyen notas ni datos confidenciales, y un ID inexistente es indistinguible de uno ajeno para quien no es administrador.
+Cualquier cambio rechazado conserva intacta la nota original.
 
-## Trabajo estudiantil y dónde está cada entregable
+## 7. Estructura del repositorio
 
-| Requisito del laboratorio | Entregable |
-| --- | --- |
-| Requisitos (8), amenazas (7) y matriz requisito-riesgo-prueba | `INFORME.md` secciones 2 a 4 |
-| 12 casos de diseño (3 positivos, 6 negativos, 3 frontera) + extras, todos automatizados | `INFORME.md` sección 5, `tests/test_laboratorio.py` |
-| Dos ciclos TDD rojo-verde-refactor | `INFORME.md` sección 6 |
-| Corrección de defectos (SEC-01 a SEC-06) y hallazgos | `src/lab.py`, `servidor.py`, `INFORME.md` sección 7 |
-| Pruebas de API y evidencia de ejecución | `ejecutar_todo.ps1`, `evidencia.txt` |
-| Dictamen de liberación o bloqueo con riesgo residual | `INFORME.md` sección 8 |
-| Informe para entregar | `Informe_Seguridad_Expedientes.pdf` (completar nombre, curso y docente) |
+```
+src/lab.py                      Modelo de negocio (autenticar, autorizar, validar, auditar)
+servidor.py                     API HTTP local (127.0.0.1:8765)
+tests/test_laboratorio.py       Pruebas de unidad (identificadores TC-xx en los nombres)
+tests/test_api.py               Pruebas de integración contra el servidor real (puerto efímero)
+ejecutar_todo.ps1               Suite + 21 pruebas de API con curl + evidencia
+evidencias/                     Evidencias saneadas (ver sección 8)
+tools/                          Herramientas de evidencia: registrar_evidencia, ejecucion_limpia, mutaciones
+informe/                        Datos (datos.py), equipo (equipo.json) y generador del informe y los CSV
+informe_seguridad.pdf           Informe técnico
+matriz_trazabilidad.csv         Matriz requisito - riesgo - caso de prueba
+casos_prueba.csv                Registro de los casos de prueba (plantilla A.1)
+hallazgos.csv                   Bitácora de hallazgos (plantilla A.2)
+```
 
-El dictamen no afirma seguridad absoluta: es liberable solo como material didáctico local y está bloqueado para cualquier uso real.
+## 8. Evidencias y cómo reproducirlas
 
-## Estructura
+| Evidencia | Ubicación | Cómo reproducirla |
+| --- | --- | --- |
+| Ciclos TDD rojo-verde-refactor con hash de commit | `evidencias/tdd/` (`REGISTRO_TDD.md`) | `git checkout <hash>` y `python -m unittest discover -s tests -v` (luego `git checkout main`) |
+| Dos ejecuciones en estado limpio (clon nuevo) | `evidencias/ejecucion_limpia_1.txt`, `_2.txt` | `python tools/ejecucion_limpia.py` |
+| Pruebas de API con `ejecutar_todo.ps1` | `evidencias/ejecucion_ps1.txt` | Comando de la sección 3 |
+| Pruebas manuales por la API (curl) | `evidencias/pruebas_manuales_api.md` | Comandos incluidos en el archivo |
+| Inspección estática y SAST (bandit) | `evidencias/inspeccion_estatica.md`, `evidencias/sast_bandit.txt` | Lista de comprobación; bandit es opcional |
+| Prueba de mutación | `evidencias/mutaciones.md` | `python tools/mutaciones.py` (unos 2 minutos) |
 
-- `src/lab.py`: modelo de negocio con los defectos SEC-01 a SEC-04 ya corregidos y auditoría sin tokens.
-- `servidor.py`: API local mínima para pruebas HTTP (corrige además SEC-06).
-- `tests/test_laboratorio.py`: suite de 16 pruebas (12 casos de diseño + 4 extras).
-- `ejecutar_todo.ps1`: ejecuta pruebas unitarias y de API y regenera `evidencia.txt`.
+Para registrar una evidencia propia: `python tools/registrar_evidencia.py evidencias/mi_evidencia.txt "Título"` (incluye fecha, versiones, commit y rutas saneadas).
 
-El proyecto no usa contraseñas reales y los tokens no son credenciales reales. Los estudiantes **no deben copiar esta estrategia de autenticación a un sistema real**.
+## 9. Regenerar los entregables del informe
+
+1. Complete `informe/equipo.json` (curso, integrantes, revisor, compañero). Los campos con `[COMPLETAR...]` o `[PENDIENTE...]` aparecen resaltados en el PDF.
+2. `python informe/generar.py` ejecuta la suite, calcula las métricas, reescribe los tres CSV y genera `informe_seguridad.pdf` (requiere Microsoft Edge; sin él deja el HTML en `informe/_build/`).
+
+## 10. Equipo y contribuciones
+
+Cada integrante debe realizar al menos 2 commits significativos en al menos 2 días distintos. El informe calcula este requisito desde `git log` usando los autores de `informe/equipo.json`.
+
+## 11. Reglas de seguridad de este laboratorio
+
+Probar únicamente este laboratorio local (u otro sistema propio con autorización). No evaluar plataformas reales ni de terceros. No incluir tokens ni datos personales reales en el repositorio o el informe.
+No alterar una aserción para ocultar un fallo confirmado.

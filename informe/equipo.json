@@ -1,0 +1,26 @@
+{
+  "institucion": "Universidad Técnica Nacional (UTN)",
+  "curso": "[COMPLETAR: nombre del curso]",
+  "codigo_curso": "[COMPLETAR: código del curso]",
+  "grupo": "[COMPLETAR: grupo]",
+  "docente": "[COMPLETAR: docente]",
+  "fecha_entrega": "[COMPLETAR: fecha de entrega]",
+  "integrantes": [
+    {"nombre": "[COMPLETAR: integrante 1]", "git_autor": "BSVS777", "aporte": "[COMPLETAR: qué aportó]"},
+    {"nombre": "[COMPLETAR: integrante 2]", "git_autor": "[COMPLETAR: autor Git]", "aporte": "[COMPLETAR: qué aportó]"}
+  ],
+  "responsable_decision": "[COMPLETAR: nombre y rol del responsable hipotético de la decisión de liberación]",
+  "revision_cruzada": {
+    "revisor": "[PENDIENTE: persona distinta del autor]",
+    "autor_revisado": "[PENDIENTE: autor de la política y de los casos]",
+    "fecha": "[PENDIENTE: fecha de la inspección]",
+    "observaciones_del_revisor": "[PENDIENTE: confirmar, corregir o ampliar OBS-01..OBS-04]"
+  },
+  "prueba_reproducibilidad": {
+    "companero": "[PENDIENTE: compañero que ejecutó la suite solo con el README]",
+    "fecha": "[PENDIENTE]",
+    "sistema": "[PENDIENTE: sistema operativo y versión de Python]",
+    "pasos_suficientes": "[PENDIENTE: sí / no]",
+    "dificultades": "[PENDIENTE: dificultades encontradas]"
+  }
+}
