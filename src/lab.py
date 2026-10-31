@@ -47,6 +47,12 @@ def _auditar(estado, accion, usuario, expediente_id, resultado):
     )
 
 
+def _denegar(estado, accion, usuario, expediente_id):
+    """Unica respuesta de denegacion: un solo camino impide que 403 difiera segun el caso."""
+    _auditar(estado, accion, usuario, expediente_id, "denegada")
+    return 403, {"error": "Operación denegada"}  # sin datos confidenciales
+
+
 def _puede_leer(usuario, expediente):
     """SEC-01: estudiante solo lo propio, docente solo su sede, admin todo."""
     rol = usuario["rol"]
@@ -75,12 +81,10 @@ def leer_expediente(estado, token, expediente_id):
     expediente = estado["expedientes"].get(expediente_id)
     if expediente is None:
         if usuario["rol"] == "administrador":
-            return 404, {"error": "No existe"}
-        _auditar(estado, "lectura", usuario, expediente_id, "denegada")
-        return 403, {"error": "Operación denegada"}  # indistinguible de un expediente ajeno
+            return 404, {"error": "No existe"}  # solo el administrador distingue un ID inexistente
+        return _denegar(estado, "lectura", usuario, expediente_id)
     if not _puede_leer(usuario, expediente):
-        _auditar(estado, "lectura", usuario, expediente_id, "denegada")
-        return 403, {"error": "Operación denegada"}  # sin datos confidenciales
+        return _denegar(estado, "lectura", usuario, expediente_id)
     _auditar(estado, "lectura", usuario, expediente_id, "permitida")
     return 200, dict(expediente)
 
@@ -90,13 +94,10 @@ def actualizar_nota(estado, token, expediente_id, nota):
     if usuario is None:
         return 401, {"error": "No autenticado"}
     expediente = estado["expedientes"].get(expediente_id)
-    if expediente is None:
-        _auditar(estado, "actualizacion", usuario, expediente_id, "denegada")
-        return 403, {"error": "Operación denegada"}  # indistinguible de un expediente ajeno
     # Permisos primero (rol y SEC-02: sede), validacion de datos despues.
-    if usuario["rol"] != "docente" or expediente["sede"] != usuario["sede"]:
-        _auditar(estado, "actualizacion", usuario, expediente_id, "denegada")
-        return 403, {"error": "Operación denegada"}
+    # Un ID inexistente se trata como no autorizado (SEC-05: no enumerar expedientes).
+    if expediente is None or usuario["rol"] != "docente" or expediente["sede"] != usuario["sede"]:
+        return _denegar(estado, "actualizacion", usuario, expediente_id)
     if not _nota_valida(nota):
         _auditar(estado, "actualizacion", usuario, expediente_id, "rechazada")
         return 400, {"error": "Nota inválida"}
