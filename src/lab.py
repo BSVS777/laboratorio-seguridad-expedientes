@@ -5,6 +5,7 @@ Correcciones: SEC-01 autorizacion en lectura, SEC-02 sede del docente,
 SEC-03 sesiones revocadas/expiradas, SEC-04 validacion de nota, y auditoria sin tokens.
 """
 import math
+import time
 
 USUARIOS = {
     "ana": {"id": "ana", "rol": "estudiante", "sede": "Central"},
@@ -15,19 +16,25 @@ USUARIOS = {
 }
 
 NOTA_MIN, NOTA_MAX = 0, 100
+SESION_TTL_SEGUNDOS = 8 * 60 * 60  # vigencia de una sesion sintetica nueva
 
 
-def estado_inicial():
-    """Crea datos de laboratorio independientes para cada ejecucion."""
+def estado_inicial(ahora=time.time):
+    """Crea datos de laboratorio independientes para cada ejecucion.
+
+    `ahora` es el reloj (segundos desde la epoca); se inyecta para poder probar la caducidad.
+    """
+    vence = ahora() + SESION_TTL_SEGUNDOS
     return {
+        "ahora": ahora,
         "expedientes": {
             "101": {"id": "101", "estudiante": "ana", "sede": "Central", "nota": 82},
             "202": {"id": "202", "estudiante": "luis", "sede": "Pacifico", "nota": 91},
         },
         "sesiones": {
-            f"lab-{id_usuario}": {"usuario": id_usuario, "revocada": False, "expirada": False}
+            f"lab-{id_usuario}": {"usuario": id_usuario, "revocada": False, "expirada": False, "expira_en": vence}
             for id_usuario in USUARIOS
-        } | {"lab-vencida": {"usuario": "ana", "revocada": False, "expirada": True}},
+        } | {"lab-vencida": {"usuario": "ana", "revocada": False, "expirada": True, "expira_en": ahora() - 1}},
         "auditoria": [],
     }
 
@@ -36,6 +43,8 @@ def autenticar(estado, token):
     """SEC-03: una sesion revocada o expirada NO autentica."""
     sesion = estado["sesiones"].get(token)
     if sesion is None or sesion["revocada"] or sesion["expirada"]:
+        return None
+    if estado["ahora"]() >= sesion["expira_en"]:  # caducidad por reloj
         return None
     return USUARIOS.get(sesion["usuario"])
 
@@ -108,7 +117,7 @@ def actualizar_nota(estado, token, expediente_id, nota):
 
 def revocar_sesion(estado, token):
     sesion = estado["sesiones"].get(token)
-    if sesion is None or sesion["revocada"] or sesion["expirada"]:
+    if sesion is None or sesion["revocada"] or sesion["expirada"] or estado["ahora"]() >= sesion["expira_en"]:
         return 401, {"error": "No autenticado"}
     sesion["revocada"] = True
     return 200, {"mensaje": "Sesión revocada"}
