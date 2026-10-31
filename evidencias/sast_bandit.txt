@@ -1,0 +1,31 @@
+# SAST adicional: bandit (analisis estatico sin ejecutar el codigo)
+comando: python -m bandit -r src servidor.py -f txt
+commit base: 06303e3 (codigo final de src/ y servidor.py)
+bandit 1.9.4
+------------------------------------------------------------------------
+Run started:2026-10-31 03:45:42.638760+00:00
+
+Test results:
+	No issues identified.
+
+Code scanned:
+	Total lines of code: 163
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 0
+Files skipped (0):
+
+Interpretacion: bandit no encuentra patrones inseguros genericos (eval, shell, pickle, bind a todas las interfaces, etc.),
+pero NO puede razonar sobre reglas de negocio como la autorizacion por sede. 'Sin hallazgos' es no concluyente
+para SEC-01..SEC-05; por eso se complementa con la lista de comprobacion manual y con las pruebas.
