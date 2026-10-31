@@ -11,7 +11,6 @@ No publicar en Internet ni conectar a datos reales. Los tokens (`lab-ana`, etc.)
 | Paquetes | Ninguno: solo la biblioteca estándar de Python. **No hay que instalar nada** |
 | Git | Para clonar el repositorio |
 | Windows PowerShell + `curl.exe` | Opcional: pruebas manuales y `ejecutar_todo.ps1` |
-| Microsoft Edge | Opcional: solo para regenerar `informe_seguridad.pdf` |
 
 > **Windows:** si al escribir `python` se abre Microsoft Store, desactive el alias en *Configuración > Aplicaciones > Configuración avanzada de aplicaciones >
 > Alias de ejecución de aplicaciones* (Python), o use `py` en lugar de `python` en todos los comandos.
@@ -78,8 +77,6 @@ tests/test_api.py               Pruebas de integración contra el servidor real 
 ejecutar_todo.ps1               Suite + 21 pruebas de API con curl + evidencia
 evidencias/                     Evidencias saneadas (ver sección 8)
 tools/                          Herramientas de evidencia: registrar_evidencia, ejecucion_limpia, mutaciones
-informe/                        Datos (datos.py), equipo (equipo.json) y generador del informe y los CSV
-informe_seguridad.pdf           Informe técnico
 matriz_trazabilidad.csv         Matriz requisito - riesgo - caso de prueba
 casos_prueba.csv                Registro de los casos de prueba (plantilla A.1)
 hallazgos.csv                   Bitácora de hallazgos (plantilla A.2)
@@ -98,16 +95,7 @@ hallazgos.csv                   Bitácora de hallazgos (plantilla A.2)
 
 Para registrar una evidencia propia: `python tools/registrar_evidencia.py evidencias/mi_evidencia.txt "Título"` (incluye fecha, versiones, commit y rutas saneadas).
 
-## 9. Regenerar los entregables del informe
-
-1. Complete `informe/equipo.json` (curso, integrantes, revisor, compañero). Los campos con `[COMPLETAR...]` o `[PENDIENTE...]` aparecen resaltados en el PDF.
-2. `python informe/generar.py` ejecuta la suite, calcula las métricas, reescribe los tres CSV y genera `informe_seguridad.pdf` (requiere Microsoft Edge; sin él deja el HTML en `informe/_build/`).
-
-## 10. Equipo y contribuciones
-
-Cada integrante debe realizar al menos 2 commits significativos en al menos 2 días distintos. El informe calcula este requisito desde `git log` usando los autores de `informe/equipo.json`.
-
-## 11. Reglas de seguridad de este laboratorio
+## 9. Reglas de seguridad de este laboratorio
 
 Probar únicamente este laboratorio local (u otro sistema propio con autorización). No evaluar plataformas reales ni de terceros. No incluir tokens ni datos personales reales en el repositorio o el informe.
 No alterar una aserción para ocultar un fallo confirmado.
