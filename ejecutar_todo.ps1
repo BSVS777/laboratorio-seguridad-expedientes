@@ -1,13 +1,20 @@
 # Ejecuta TODO: pruebas unitarias + servidor + pruebas de API + resumen.
 # Uso (desde esta carpeta):  powershell -ExecutionPolicy Bypass -File .\ejecutar_todo.ps1
 Set-Location $PSScriptRoot
+$log = New-Object System.Collections.Generic.List[string]
+function Escribir($Texto, $Color) {
+    $log.Add($Texto)
+    if ($Color) { Write-Host $Texto -ForegroundColor $Color } else { Write-Host $Texto }
+}
 $py = if (Get-Command python -ErrorAction SilentlyContinue) { "python" } elseif (Get-Command py -ErrorAction SilentlyContinue) { "py" } else { Write-Host "No se encontro Python"; exit 1 }
 
-Write-Host "`n=== 1) PRUEBAS UNITARIAS ===" -ForegroundColor Cyan
-& $py -m unittest discover -s tests -v
+Escribir "`n=== 1) PRUEBAS UNITARIAS ===" "Cyan"
+# unittest escribe en stderr: se mezcla con stdout para que quede en la evidencia.
+$salidaUnit = @(& $py -m unittest discover -s tests -v 2>&1 | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.Exception.Message } else { "$_" } })
 $unitOk = ($LASTEXITCODE -eq 0)
+foreach ($linea in $salidaUnit) { Escribir $linea "" }
 
-Write-Host "`n=== 2) PRUEBAS DE API (127.0.0.1:8765) ===" -ForegroundColor Cyan
+Escribir "`n=== 2) PRUEBAS DE API (127.0.0.1:8765) ===" "Cyan"
 $srv = Start-Process $py -ArgumentList "servidor.py" -PassThru -WindowStyle Hidden
 Start-Sleep -Seconds 2
 
@@ -58,12 +65,16 @@ try {
         if (-not $ok) { $fallos++ }
         $color = if ($ok) { "Green" } else { "Red" }
         $estado = if ($ok) { "OK  " } else { "FALLO" }
-        Write-Host ("[{0}] {1,-38} esperado {2} obtenido {3}" -f $estado, $c[0], $c[5], $r.Codigo) -ForegroundColor $color
+        Escribir ("[{0}] {1,-38} esperado {2} obtenido {3}" -f $estado, $c[0], $c[5], $r.Codigo) $color
     }
 } finally {
     if ($srv -and -not $srv.HasExited) { Stop-Process -Id $srv.Id -Force }
 }
 
-Write-Host "`n=== RESUMEN ===" -ForegroundColor Cyan
-Write-Host ("Pruebas unitarias: {0}" -f $(if ($unitOk) { "OK" } else { "CON FALLOS" }))
-Write-Host ("Pruebas de API:    {0} de {1} correctas" -f ($casos.Count - $fallos), $casos.Count)
+Escribir "`n=== RESUMEN ===" "Cyan"
+Escribir ("Pruebas unitarias: {0}" -f $(if ($unitOk) { "OK" } else { "CON FALLOS" })) ""
+Escribir ("Pruebas de API:    {0} de {1} correctas" -f ($casos.Count - $fallos), $casos.Count) ""
+
+# Evidencia reproducible en UTF-8 (sin BOM).
+[IO.File]::WriteAllLines((Join-Path $PSScriptRoot "evidencia.txt"), $log, (New-Object Text.UTF8Encoding $false))
+if (-not $unitOk -or $fallos -gt 0) { exit 1 }
