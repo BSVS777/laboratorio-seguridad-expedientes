@@ -119,11 +119,17 @@ class SeguridadExpedientes(PruebaSeguridadBase):
             self.assertEqual(200, codigo, f"la nota {nota} deberia aceptarse")
             self.assertEqual(nota, self.estado["expedientes"]["101"]["nota"])
 
-    def test_TC12_expediente_inexistente_no_devuelve_datos(self):
-        """[F] SEC-05: un expediente inexistente responde 404 sin datos."""
-        codigo, datos = leer_expediente(self.estado, "lab-ana", "999")
-        self.assertEqual(404, codigo)
-        self.assertSinDatosProtegidos(datos, "expediente inexistente")
+    def test_TC12_expediente_inexistente_no_permite_enumerar_ids(self):
+        """[F] SEC-05: para quien no es administrador, un ID inexistente es
+        indistinguible de un expediente ajeno (misma respuesta 403, sin datos).
+        Solo el administrador puede saber que un ID no existe (404)."""
+        codigo_admin, datos_admin = leer_expediente(self.estado, "lab-admin", "999")
+        self.assertEqual(404, codigo_admin)
+        self.assertSinDatosProtegidos(datos_admin, "expediente inexistente (admin)")
+        for token in ("lab-ana", "lab-maria"):
+            ajeno = leer_expediente(self.estado, token, "202")  # existe, pero no es suyo
+            inexistente = leer_expediente(self.estado, token, "999")
+            self.assertEqual(ajeno, inexistente, f"{token}: 404 vs 403 permite enumerar expedientes")
 
     # ---------- Casos adicionales (no cuentan para el minimo de 12) ----------
     def test_TC13_token_ausente_o_desconocido_da_401(self):
@@ -150,6 +156,14 @@ class SeguridadExpedientes(PruebaSeguridadBase):
         for registro in self.estado["auditoria"]:
             self.assertNotIn("token", registro)
             self.assertFalse(any("lab-" in str(v) for v in registro.values()), f"token filtrado: {registro}")
+
+    def test_TC20_escritura_sobre_id_inexistente_no_permite_enumerar(self):
+        """[N] SEC-05: quien no puede modificar recibe 403 tambien si el ID no existe."""
+        for token in ("lab-ana", "lab-maria", "lab-admin"):
+            ajeno = actualizar_nota(self.estado, token, "202", 50)
+            inexistente = actualizar_nota(self.estado, token, "999", 50)
+            self.assertEqual(ajeno, inexistente, f"{token}: 404 vs 403 permite enumerar expedientes")
+        self.assertExpedientesIntactos("escritura sobre ids inexistentes")
 
     def test_TC16_permiso_se_evalua_antes_que_validacion_del_dato(self):
         """[N] SEC-05: un estudiante con dato invalido recibe 403, no 400."""

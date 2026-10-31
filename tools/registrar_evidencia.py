@@ -41,7 +41,10 @@ def main():
         sys.exit(__doc__)
     destino = RAIZ / sys.argv[1]
     titulo = sys.argv[2] if len(sys.argv) > 2 else "Ejecucion de la suite"
-    ejecucion = subprocess.run(COMANDO, cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
+    entorno = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
+    ejecucion = subprocess.run(
+        COMANDO, cwd=RAIZ, capture_output=True, text=True, encoding="utf-8", env=entorno
+    )
     salida = ejecucion.stdout + ejecucion.stderr
     sucio = "con cambios sin confirmar" if _git("status", "--porcelain", "--", "src", "tests", "servidor.py") else "limpio"
     encabezado = [
